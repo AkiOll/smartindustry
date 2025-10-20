@@ -13,7 +13,7 @@ mq = mqtt.connect(broker, {
 });
 
 //subscribe the topic
-mq.subscribe('automaatio/#');
+mq.subscribe('automaatio1/#');
 
 //dotify about successful connection
 mq.on('connect', function(){
@@ -25,7 +25,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // Replace the URI-string below by your own URI (get that from Mongo DB Atlas 
 // Connect > driver > NodeJs (v. 6.7), don't forget to add your own username & password to the string
-const uri = "mongodb+srv://eki:eki@cluster0.91fze.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; 
+const uri = "mongodb+srv://aki:Salasana@cluster0.79l3dlw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; 
 
 const client = new MongoClient(uri, {
   serverApi: {
