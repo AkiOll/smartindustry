@@ -1,30 +1,28 @@
 
-//MQTT Broker definitions
+//MQTT-välityspalvelimen määrittely
 const mqtt    = require('mqtt');
-//const broker = 'mqtt://automaatio:Z0od2PZF65jbtcXu@automaatio.cloud.shiftr.io';
 const broker = 'mqtt://test.mosquitto.org';
 const user = '';
 const pw = ''; 
 
-//Connect to broker
+//määritellään välityspalvelimen "olio"
 mq = mqtt.connect(broker, {
   'username': user,
   'password': pw
 });
 
-//subscribe the topic
+//tilataan oikea topic
 mq.subscribe('automaatio1/#');
 
-//dotify about successful connection
+//liitytään välityspalvelimeen
 mq.on('connect', function(){
     console.log('Connected.....');
 });
 
-//API for MongoDB Atlas
+//Määritellään tietokanta-API
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
-// Replace the URI-string below by your own URI (get that from Mongo DB Atlas 
-// Connect > driver > NodeJs (v. 6.7), don't forget to add your own username & password to the string
+//korvaa alla oleva URI-string omalla URI:lla (hae se Mongo Atlaksen Connect-kohdasta, lisää myös oma käyttäjätunnus ja salasana)
 const uri = "mongodb+srv://aki:Salasana@cluster0.79l3dlw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; 
 
 const client = new MongoClient(uri, {
@@ -35,49 +33,17 @@ const client = new MongoClient(uri, {
   }
 });
 
-//data object for MQTT message
+//määritellään tietokannan ja kokoelman nimi sekä dataobjekti sensoridatan käsittelyyn
+const myDB = client.db("sensordata2");
+const myColl = myDB.collection("sensordata2");
 var obj;
 
-//wait for data from MQTT broker and insert it to MongoDB
+//odotetaan dataa välityspalvelimelta ja viedään data tietokantaan
 mq.on('message', function(topic, message) {
-	//console.log(message.toString('utf8'));
-	obj = JSON.parse(message);
-  
-	//DB and collection names are obtained from the message
-	var dbname = obj.db_name;
-	var collection = obj.coll_name;
-
-	//timestamp is added
-	obj.DateTime = timeConverter(Date.now());
-  
-	console.log(obj);
- 
-	//Definition of database & collection and and object for data retrieval/storage
-	const myDB = client.db(dbname);
-	const myColl = myDB.collection(collection);
-  
-	//insertion of ¨message to MongoDB
+  console.log(message.toString('utf8'));
+  obj = JSON.parse(message);
 	myColl.insertOne(obj);
-		
 	console.log(
 	`An entry was inserted successfully`,
 	);
 });
-if (!Date.now) {
-    Date.now = function() { return new Date().getTime(); }
-}
-
-function timeConverter(UNIX_timestamp){
-  var a = new Date(UNIX_timestamp);
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var year = a.getFullYear();
-  var month = months[a.getMonth()];
-  var date = a.getDate();
-  var hour = a.getHours();
-  var min = a.getMinutes();
-  var sec = a.getSeconds();
-  var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
-  return time;
-}
-
-
